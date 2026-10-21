@@ -1,0 +1,36 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { env } from 'cloudflare:workers';
+const { title = 'Rannaghor BD — বাংলার রান্নাঘর', description = 'বাংলাদেশি, ভারতীয় ও আন্তর্জাতিক রান্নার সহজ রেসিপি খুঁজে নিন Rannaghor BD-তে।', canonical = '/', image = 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1200&q=85', noindex = false } = Astro.props;
+const bindings = env as unknown as Record<string, string | undefined>;
+const siteUrl = (bindings.SITE_URL || 'https://rannaghorbd.example').replace(/\/$/, '');
+const canonicalUrl = `${siteUrl}${canonical}`;
+---
+<!doctype html>
+<html lang="bn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#173f32" />
+    <meta name="description" content={description} />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Rannaghor BD" />
+    <meta property="og:locale" content="bn_BD" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header />
+    <main><slot /></main>
+    <Footer />
+  </body>
+</html>

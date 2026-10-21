@@ -1,0 +1,23 @@
+{
+  "recipes": [
+    {
+      "title_bn": "নমুনা রেসিপি",
+      "title_en": "Sample Recipe",
+      "slug": "sample-recipe",
+      "description_bn": "এই সারিটি টেমপ্লেট বোঝানোর জন্য; আপনার যাচাইকৃত রেসিপি দিয়ে বদলান।",
+      "ingredients": ["উপকরণ ১", "উপকরণ ২"],
+      "instructions": ["ধাপ ১", "ধাপ ২"],
+      "prep_time_minutes": 10,
+      "cook_time_minutes": 20,
+      "servings": 2,
+      "difficulty": "সহজ",
+      "cuisine": "বাংলাদেশি",
+      "category": "নমুনা",
+      "image_url": "",
+      "source_url": "",
+      "license_name": "Original content - confirm rights before publishing",
+      "license_url": "",
+      "attribution": "নিজস্ব কনটেন্ট হলে আপনার/লেখকের নাম লিখুন"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import { searchRecipes, hasDatabaseConfig } from '../../lib/recipes';
+
+const q = Astro.url.searchParams.get('q') ?? '';
+const cuisine = Astro.url.searchParams.get('cuisine') ?? '';
+const category = Astro.url.searchParams.get('category') ?? '';
+const filter = cuisine || category;
+const requestedPage = Math.max(1, Number.parseInt(Astro.url.searchParams.get('page') || '1', 10) || 1);
+const pageSize = 24;
+let searchResult = await searchRecipes(q, filter, requestedPage, pageSize);
+let page = requestedPage;
+let totalPages = Math.max(1, Math.ceil(searchResult.total / pageSize));
+if (searchResult.total > 0 && page > totalPages) {
+  page = totalPages;
+  searchResult = await searchRecipes(q, filter, page, pageSize);
+}
+const recipes = searchResult.recipes;
+const totalRecipes = searchResult.total;
+const demoMode = !hasDatabaseConfig();
+const paginationHref = (pageNumber: number) => {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (cuisine) params.set('cuisine', cuisine);
+  if (category) params.set('category', category);
+  params.set('page', String(pageNumber));
+  return `/recipes/?${params.toString()}`;
+};
+const pageTitle = q ? `“${q}” — রেসিপি খুঁজুন` : filter ? `${filter} রেসিপি` : 'সব রেসিপি';
+const description = 'বাংলাদেশি, ভারতীয় ও আন্তর্জাতিক খাবারের সহজ বাংলা রেসিপি খুঁজে নিন।';
+const categories = [
+  { label: 'সব', href: '/recipes/', active: !filter },
+  { label: 'বাংলাদেশি', href: '/recipes/?cuisine=বাংলাদেশি', active: cuisine === 'বাংলাদেশি' },
+  { label: 'ভারতীয়', href: '/recipes/?cuisine=ভারতীয়', active: cuisine === 'ভারতীয়' },
+  { label: 'আন্তর্জাতিক', href: '/recipes/?cuisine=আন্তর্জাতিক', active: cuisine === 'আন্তর্জাতিক' },
+  { label: 'ডেজার্ট', href: '/recipes/?category=ডেজার্ট', active: category === 'ডেজার্ট' },
+];
+---
+<BaseLayout title={`${pageTitle} | Rannaghor BD`} description={description} canonical="/recipes/">
+  <section class="page-hero">
+    <div class="container">
+      <div class="breadcrumbs"><a href="/">হোম</a><span>›</span><span>রেসিপি</span></div>
+      <h1>{pageTitle}</h1>
+      <p>আপনার পছন্দ, সময় ও উপকরণ অনুযায়ী রেসিপি খুঁজে নিন।</p>
+      <form class="search-form" action="/recipes/" method="get" style="margin-top:22px;max-width:560px">
+        <input type="search" name="q" value={q} placeholder="যেমন: মুরগি, ডাল, বিরিয়ানি…" aria-label="রেসিপি খুঁজুন" />
+        <button type="submit">খুঁজুন ↗</button>
+      </form>
+    </div>
+  </section>
+  <section class="recipe-results">
+    <div class="container">
+      <div class="filters">
+        {categories.map((item) => <a class:list={['filter-pill', { active: item.active }]} href={item.href}>{item.label}</a>)}
+      </div>
+      <p class="result-count">মোট {totalRecipes}টি রেসিপি পাওয়া গেছে{q ? ` — “${q}”` : ''} · পৃষ্ঠা {Math.min(page, totalPages)} / {totalPages}</p>
+      {demoMode && <div class="notice" style="margin-bottom:20px">প্রিভিউ মোডের নমুনা রেসিপি। Supabase সংযোগ ও যাচাইকৃত কনটেন্ট যোগ করার পরে আসল লাইব্রেরি দেখা যাবে।</div>}
+      {recipes.length ? <div class="recipe-grid">{recipes.map((recipe) => <RecipeCard recipe={recipe} />)}</div> : <div class="empty-state"><h2>এখনো কোনো রেসিপি মেলেনি</h2><p>অন্য শব্দ দিয়ে খুঁজে দেখুন অথবা সব রেসিপি দেখুন।</p><a class="button-link" href="/recipes/">সব রেসিপি দেখুন ↗</a></div>}
+      {recipes.length > 0 && totalPages > 1 && (
+        <nav class="pagination" aria-label="রেসিপি পৃষ্ঠা নেভিগেশন">
+          {page > 1 && <a href={paginationHref(page - 1)} class="pagination-link">← আগের পৃষ্ঠা</a>}
+          <span>পৃষ্ঠা {page} / {totalPages}</span>
+          {page < totalPages && <a href={paginationHref(page + 1)} class="pagination-link">পরের পৃষ্ঠা →</a>}
+        </nav>
+      )}
+    </div>
+  </section>
+</BaseLayout>

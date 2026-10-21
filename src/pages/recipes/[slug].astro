@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import RecipeCard from '../../components/RecipeCard.astro';
+import { getPublishedRecipes, getRecipeBySlug, hasDatabaseConfig } from '../../lib/recipes';
+const slug = Astro.params.slug ?? '';
+const recipe = await getRecipeBySlug(slug);
+const demoMode = !hasDatabaseConfig();
+if (!recipe) return Astro.redirect('/recipes/', 302);
+const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+const instructions = Array.isArray(recipe.instructions) ? recipe.instructions : [];
+const totalTime = Number(recipe.prep_time_minutes || 0) + Number(recipe.cook_time_minutes || 0);
+const similarRecipes = (await getPublishedRecipes(8)).filter((item) => item.slug !== recipe.slug && (item.cuisine === recipe.cuisine || item.category === recipe.category)).slice(0,4);
+const schema = {
+  '@context': 'https://schema.org', '@type': 'Recipe', name: recipe.title_bn,
+  alternateName: recipe.title_en || undefined, description: recipe.description_bn || '', image: recipe.image_url ? [recipe.image_url] : undefined,
+  recipeCuisine: recipe.cuisine || undefined, recipeCategory: recipe.category || undefined,
+  prepTime: recipe.prep_time_minutes ? `PT${recipe.prep_time_minutes}M` : undefined,
+  cookTime: recipe.cook_time_minutes ? `PT${recipe.cook_time_minutes}M` : undefined,
+  totalTime: totalTime ? `PT${totalTime}M` : undefined, recipeYield: recipe.servings ? `${recipe.servings} পরিবেশন` : undefined,
+  recipeIngredient: ingredients.map((v) => typeof v === 'string' ? v : `${v.quantity || ''} ${v.name}`.trim()),
+  recipeInstructions: instructions.map((v, i) => ({ '@type': 'HowToStep', position: i + 1, text: typeof v === 'string' ? v : v.text })),
+};
+const schemaJson = JSON.stringify(schema).replace(/</g, '\\u003c');
+---
+<BaseLayout title={`${recipe.title_bn} — সহজ বাংলা রেসিপি | Rannaghor BD`} description={recipe.description_bn || `${recipe.title_bn} রান্নার সহজ বাংলা রেসিপি, উপকরণ ও ধাপে ধাপে নির্দেশনা।`} canonical={`/recipes/${encodeURIComponent(recipe.slug)}/`} image={recipe.image_url || undefined}>
+  <script type="application/ld+json" set:html={schemaJson} />
+  <section class="recipe-detail"><div class="container"><div class="breadcrumbs"><a href="/">হোম</a><span>›</span><a href="/recipes/">রেসিপি</a><span>›</span><span>{recipe.title_bn}</span></div><div class="detail-layout"><article class="detail-main">{demoMode && <div class="notice">এটি ডিজাইন প্রিভিউর নমুনা রেসিপি—production-এ প্রকাশের আগে কনটেন্ট ও ছবির ব্যবহার-অনুমতি যাচাই করুন।</div>}<span class="section-kicker">{recipe.cuisine || 'রান্নার রেসিপি'}{recipe.category ? ` · ${recipe.category}` : ''}</span><h1>{recipe.title_bn}</h1>{recipe.description_bn && <p class="detail-description">{recipe.description_bn}</p>}{recipe.image_url && <img class="detail-image" src={recipe.image_url} alt={recipe.title_bn} fetchpriority="high"/>}<div class="detail-stats"><div class="stat-card"><strong>{recipe.prep_time_minutes ?? '—'}</strong><span>প্রস্তুতি (মিনিট)</span></div><div class="stat-card"><strong>{recipe.cook_time_minutes ?? '—'}</strong><span>রান্না (মিনিট)</span></div><div class="stat-card"><strong>{recipe.servings ?? '—'}</strong><span>পরিবেশন</span></div><div class="stat-card"><strong>{recipe.difficulty || 'সহজ'}</strong><span>কঠিনতা</span></div></div><section class="recipe-section"><h2>উপকরণ</h2><ul class="ingredient-list">{ingredients.map((item) => <li>{typeof item === 'string' ? item : `${item.quantity || ''} ${item.name}`.trim()}</li>)}</ul></section><section class="recipe-section"><h2>রান্নার পদ্ধতি</h2><ol class="instruction-list">{instructions.map((step) => <li>{typeof step === 'string' ? step : step.text}</li>)}</ol></section>{recipe.attribution && <p class="site-note">উৎস/স্বীকৃতি: {recipe.attribution}{recipe.license_name ? ` · লাইসেন্স: ${recipe.license_name}` : ''}{recipe.source_url && <> · <a href={recipe.source_url} rel="nofollow noopener" target="_blank">মূল উৎস</a></>}</p>}</article><aside class="detail-sidebar"><h3>রেসিপি এক নজরে</h3><div class="sidebar-line"><span>রান্নার সময়</span><strong>{totalTime ? `${totalTime} মিনিট` : 'উল্লেখ নেই'}</strong></div><div class="sidebar-line"><span>পরিবেশন</span><strong>{recipe.servings ? `${recipe.servings} জন` : 'উল্লেখ নেই'}</strong></div><div class="sidebar-line"><span>ধরন</span><strong>{recipe.cuisine || 'সাধারণ'}</strong></div><p>রান্নার আগে সব উপকরণ মেপে নিলে প্রস্তুতি আরও সহজ হবে। মাংস বা মাছ রান্নার সময় সম্পূর্ণ সেদ্ধ হয়েছে নিশ্চিত করুন।</p><a class="button-link" href="/recipes/" style="width:100%;justify-content:center">আরও রেসিপি ↗</a></aside></div></div></section>
+  {similarRecipes.length > 0 && <section class="section section-tight"><div class="container"><div class="section-head"><div><span class="section-kicker">আরও অনুপ্রেরণা</span><h2>সম্পর্কিত রেসিপি</h2></div></div><div class="recipe-grid">{similarRecipes.map((item) => <RecipeCard recipe={item}/>)}</div></div></section>}
+</BaseLayout>

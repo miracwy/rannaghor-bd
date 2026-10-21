@@ -1,0 +1,18 @@
+---
+import type { Recipe } from '../lib/types';
+const { recipe, featured = false } = Astro.props as { recipe: Recipe; featured?: boolean };
+const time = (Number(recipe.prep_time_minutes || 0) + Number(recipe.cook_time_minutes || 0)) || null;
+---
+<a class:list={['recipe-card', { 'recipe-card-featured': featured }]} href={`/recipes/${encodeURIComponent(recipe.slug)}/`}>
+  <div class="recipe-card-image-wrap">
+    <img class="recipe-card-image" src={recipe.image_url || 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=1000&q=85'} alt={recipe.title_bn} loading="lazy" />
+    {recipe.cuisine && <span class="recipe-tag">{recipe.cuisine}</span>}
+    <span class="recipe-save" aria-hidden="true">♡</span>
+  </div>
+  <div class="recipe-card-body">
+    <div class="recipe-meta"><span>{recipe.category || 'রেসিপি'}</span>{time && <span>◷ {time} মিনিট</span>}</div>
+    <h3>{recipe.title_bn}</h3>
+    <p>{recipe.description_bn || 'সহজ ধাপে তৈরি করুন সুস্বাদু এই খাবারটি।'}</p>
+    <span class="recipe-link">রেসিপি দেখুন <span aria-hidden="true">↗</span></span>
+  </div>
+</a>

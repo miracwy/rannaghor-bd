@@ -1,0 +1,26 @@
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="রান্নাঘর বিডি হোম">
+      <span class="brand-mark" aria-hidden="true">রাঁ</span>
+      <span class="brand-copy"><strong>Rannaghor <em>BD</em></strong><small>বাংলার রান্নাঘর, সবার জন্য</small></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-label="মেনু খুলুন" data-nav-toggle><span></span><span></span><span></span></button>
+    <nav class="main-nav" data-nav-menu aria-label="প্রধান নেভিগেশন">
+      <a href="/">হোম</a>
+      <a href="/recipes/">সব রেসিপি</a>
+      <a href="/recipes/?cuisine=বাংলাদেশি">বাংলাদেশি</a>
+      <a href="/recipes/?cuisine=ভারতীয়">ভারতীয়</a>
+      <a href="/recipes/?cuisine=আন্তর্জাতিক">আন্তর্জাতিক</a>
+      <a class="nav-admin" href="/admin/">অ্যাডমিন ↗</a>
+    </nav>
+  </div>
+</header>
+<script>
+  const navToggle = document.querySelector('[data-nav-toggle]');
+  const navMenu = document.querySelector('[data-nav-menu]');
+  navToggle?.addEventListener('click', () => {
+    const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', String(!isOpen));
+    navMenu?.classList.toggle('is-open', !isOpen);
+  });
+</script>
