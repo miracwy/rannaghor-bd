@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/papaparse": "^5.5.3",
     "typescript": "^5.8.3",
     "wrangler": "^4.0.0"
   }
